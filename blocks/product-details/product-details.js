@@ -151,13 +151,12 @@ export default async function decorate(block) {
   const $stock = fragment.querySelector('.product-details__stock');
   const $customAttribute = fragment.querySelector('.product-details__custom-attribute');
   const $badge = fragment.querySelector('.product-details__badge');
-  
+
   block.replaceChildren(fragment);
 
   if ($badge) {
     $badge.textContent = 'Badge placeholder';
   }
-
 
   if ($tagline) {
     $tagline.textContent = 'Free shipping on orders over $50';

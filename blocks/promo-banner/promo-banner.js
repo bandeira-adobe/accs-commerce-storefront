@@ -1,7 +1,7 @@
 import { readBlockConfig } from '../../scripts/aem.js';
 import { CS_FETCH_GRAPHQL, getProductLink } from '../../scripts/commerce.js';
 
-async function fetchCategoryProducts (categoryId, maxProducts) {
+async function fetchCategoryProducts(categoryId, maxProducts) {
   const query = `
     query GetCategoryProducts($categoryId: String!, $pageSize: Int!) {
       productSearch(
@@ -37,7 +37,7 @@ async function fetchCategoryProducts (categoryId, maxProducts) {
   return data?.productSearch?.items || [];
 }
 
-export default async function decorate (block) {
+export default async function decorate(block) {
   const {
     'category-id': categoryId = '',
     heading = 'Featured Products',
