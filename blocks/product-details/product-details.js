@@ -643,9 +643,13 @@ function imageSlotConfig(ctx) {
 /**
  * Returns recently bought badge qty
  * @param {*} sku 
- * @returns 
+ * @returns  
  */
 async function getRecentlyBoughtQty(sku) {
+
+  /**
+   * quering Badge_getRecentlyBought
+   */
   const response = await fetch(
     'https://edge-sandbox-graph.adobe.io/api/5f6ee9fe-2753-41c7-a9de-c5f5bede3302/graphql',
     {
@@ -657,7 +661,10 @@ async function getRecentlyBoughtQty(sku) {
         query: `
           query ($sku: String!) {
             Badge_getRecentlyBought(sku: $sku) {
-              recentQty
+              purchases {
+                date
+                qty
+              }
             }
           }
         `,
@@ -666,7 +673,21 @@ async function getRecentlyBoughtQty(sku) {
     },
   );
 
+  /**
+   * recently bought calculated from purchase list.
+   */
   const data = await response.json();
 
-  return data?.data?.Badge_getRecentlyBought?.recentQty || 0;
+  const purchases =
+    data?.data?.Badge_getRecentlyBought?.purchases || [];
+
+  const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+
+  return purchases
+    .filter((purchase) => (
+      new Date(purchase.date).getTime() >= sevenDaysAgo
+    ))
+    .reduce((total, purchase) => (
+      total + Number(purchase.qty || 0)
+    ), 0);
 }
