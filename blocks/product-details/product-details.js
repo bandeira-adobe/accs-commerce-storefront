@@ -154,9 +154,26 @@ export default async function decorate(block) {
 
   block.replaceChildren(fragment);
 
-  if ($badge) {
-    $badge.textContent = 'Badge placeholder';
-  }
+  /**
+   * loading Recently bought badge data 
+   */
+  events.on('pdp/data', async (product) => {
+    if (!product?.sku || !$badge) {
+      return;
+    }
+
+    const qty = await getRecentlyBoughtQty(product.sku);
+
+      if (qty > 0) {
+        $badge.innerHTML = `
+          <div class="recently-bought-badge">
+            ${qty} ${qty === 1 ? 'unit' : 'units'} recently sold
+          </div>
+        `;
+      } else {
+        $badge.innerHTML = '';
+      }
+  }, { eager: true });
 
   if ($tagline) {
     $tagline.textContent = 'Free shipping on orders over $50';
@@ -621,4 +638,35 @@ function imageSlotConfig(ctx) {
       height: defaultImageProps.height,
     },
   };
+}
+
+/**
+ * Returns recently bought badge qty
+ * @param {*} sku 
+ * @returns 
+ */
+async function getRecentlyBoughtQty(sku) {
+  const response = await fetch(
+    'https://edge-sandbox-graph.adobe.io/api/5f6ee9fe-2753-41c7-a9de-c5f5bede3302/graphql',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          query ($sku: String!) {
+            Badge_getRecentlyBought(sku: $sku) {
+              recentQty
+            }
+          }
+        `,
+        variables: { sku },
+      }),
+    },
+  );
+
+  const data = await response.json();
+
+  return data?.data?.Badge_getRecentlyBought?.recentQty || 0;
 }
